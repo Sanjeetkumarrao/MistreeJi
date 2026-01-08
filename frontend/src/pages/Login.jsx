@@ -49,7 +49,7 @@ const Login = () => {
       
       // 1.5 second baad next page par bhejne ka logic
       setTimeout(() => {
-        navigate('/role-selection');
+        navigate('/role-selection', { state: { phoneNumber: phoneNumber } });
         // Yahan tum navigation use kar sakte ho: navigate('/role-selection')
       }, 1500);
 

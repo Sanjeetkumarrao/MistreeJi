@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; // 1. useLocation ko add kiya
 
 const RoleSelection = () => {
   const [selectedRole, setSelectedRole] = useState(null);
   const navigate = useNavigate();
+  
+  // 2. Location hook ko initialize kiya
+  const location = useLocation();
+  const phoneNumber = location.state?.phoneNumber; // Ab ye error nahi dega
 
   const roles = [
     {
@@ -20,22 +24,23 @@ const RoleSelection = () => {
     }
   ];
 
-    const handleNext = () => {
-    if (selectedRole === 'worker') {
-        navigate('/worker-registration');
-    } else if (selectedRole === 'customer') {
-        navigate('/customer-home');
+  const handleNext = () => {
+    if (selectedRole) {
+      // 3. Phone aur Role dono ko aage wale page par bhej rahe hain
+      navigate(`/${selectedRole}-registration`, { 
+        state: { phoneNumber, role: selectedRole } 
+      });
     }
-    };
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 transform transition-all">
         
-        {/* Header - Login Page se Synced */}
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-orange-600 font-sans">MistryJi</h1>
           <p className="text-gray-500 mt-2 font-medium">Choose your profile to continue</p>
+          {/* Debugging ke liye: {phoneNumber} */}
         </div>
 
         <div className="space-y-4">
@@ -69,7 +74,6 @@ const RoleSelection = () => {
           ))}
         </div>
 
-        {/* Action Button - Login Button Jaisa Same Styling */}
         <button
           onClick={handleNext}
           disabled={!selectedRole}
