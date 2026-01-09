@@ -47,4 +47,70 @@ const registerUser = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerUser };
+
+const loginUser = asyncHandler(async (req, res) => {
+    // 1. Data lo req.body se
+    const { phoneNumber, role } = req.body;
+
+    // 2. Validation
+    if (!phoneNumber || !role) {
+        throw new ApiError(400, "Phone number and role are required");
+    }
+
+    // 3. User ko dhoondo (Phone + Role combination)
+    const user = await User.findOne({ phoneNumber, role });
+
+    if (!user) {
+        throw new ApiError(404, "User does not exist with this role. Please register first.");
+    }
+
+    // 4. Token generate karo (Jo model mein method banaya tha)
+    const accessToken = user.generateAccessToken();
+
+    // 5. Cookie options (Security ke liye)
+    const options = {
+        httpOnly: true, // Browser code isse touch nahi kar payega (Extra safe)
+        secure: true
+    };
+
+    // 6. Response bhejo aur Cookie mein token set karo
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .json(
+            new ApiResponse(
+                200, 
+                { user, accessToken }, 
+                "User logged in successfully"
+            )
+        );
+});
+
+// loginUser ke niche add karo
+const logoutUser = asyncHandler(async (req, res) => {
+    const options = {
+        httpOnly: true,
+        secure: true
+    };
+
+    return res
+        .status(200)
+        .clearCookie("accessToken", options) // Cookie uda di!
+        .json(new ApiResponse(200, {}, "User logged out successfully"));
+});
+
+// logoutUser ke niche add karo
+const getCurrentUser = asyncHandler(async (req, res) => {
+    // Logic: req.user humein middleware (verifyJWT) ne pehle hi nikaal kar de diya hai
+    // Humein bas use response mein bhejna hai
+    return res
+        .status(200)
+        .json(new ApiResponse(200, req.user, "User details fetched successfully"));
+});
+
+export { 
+    registerUser, 
+    loginUser, 
+    logoutUser, 
+    getCurrentUser // Export karna mat bhoolna
+};
